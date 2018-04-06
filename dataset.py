@@ -8,7 +8,7 @@ import prepare_data
 data_path = Path('data')
 
 
-class RoboticsDataset(Dataset):
+class DeepglobeDataset(Dataset):
     def __init__(self, file_names: list, to_augment=False, transform=None, mode='train', problem_type=None):
         self.file_names = file_names
         self.to_augment = to_augment
@@ -27,10 +27,7 @@ class RoboticsDataset(Dataset):
         img, mask = self.transform(img, mask)
 
         if self.mode == 'train':
-            if self.problem_type == 'binary':
-                return to_float_tensor(img), torch.from_numpy(np.expand_dims(mask, 0)).float()
-            else:
-                return to_float_tensor(img), torch.from_numpy(mask).long()
+            return to_float_tensor(img), torch.from_numpy(mask).long()
         else:
             return to_float_tensor(img), str(img_file_name)
 
@@ -45,16 +42,9 @@ def load_image(path):
 
 
 def load_mask(path, problem_type):
-    if problem_type == 'binary':
-        mask_folder = 'binary_masks'
-        factor = prepare_data.binary_factor
-    elif problem_type == 'parts':
-        mask_folder = 'parts_masks'
-        factor = prepare_data.parts_factor
-    elif problem_type == 'instruments':
-        factor = prepare_data.instrument_factor
-        mask_folder = 'instruments_masks'
+    mask_folder = 'binary_masks'
+    factor = prepare_data.binary_factor
 
-    mask = cv2.imread(str(path).replace('images', mask_folder).replace('jpg', 'png'), 0)
+    mask = cv2.imread(str(path).replace('images', mask_folder), 0)
 
     return (mask / factor).astype(np.uint8)

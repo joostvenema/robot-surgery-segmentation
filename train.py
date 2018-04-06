@@ -12,10 +12,10 @@ import torch.backends.cudnn
 
 from models import UNet11, LinkNet34, UNet, UNet16
 from loss import LossBinary, LossMulti
-from dataset import RoboticsDataset
+from dataset import DeepglobeDataset
 import utils
 
-from prepare_train_val import get_split
+from prepare_train_val import get_filelists
 
 from transforms import (DualCompose,
                         ImageOnly,
@@ -36,19 +36,14 @@ def main():
     arg('--lr', type=float, default=0.0001)
     arg('--workers', type=int, default=8)
     arg('--type', type=str, default='binary', choices=['binary', 'parts', 'instruments'])
-    arg('--model', type=str, default='UNet', choices=['UNet', 'UNet11', 'LinkNet34'])
+    arg('--model', type=str, default='UNet', choices=['UNet', 'UNet11', 'UNet16', 'LinkNet34'])
 
     args = parser.parse_args()
 
     root = Path(args.root)
     root.mkdir(exist_ok=True, parents=True)
 
-    if args.type == 'parts':
-        num_classes = 4
-    elif args.type == 'instruments':
-        num_classes = 8
-    else:
-        num_classes = 1
+    num_classes = 1
 
     if args.model == 'UNet':
         model = UNet(num_classes=num_classes)
@@ -77,14 +72,14 @@ def main():
 
     def make_loader(file_names, shuffle=False, transform=None, problem_type='binary'):
         return DataLoader(
-            dataset=RoboticsDataset(file_names, transform=transform, problem_type=problem_type),
+            dataset=DeepglobeDataset(file_names, transform=transform, problem_type=problem_type),
             shuffle=shuffle,
             num_workers=args.workers,
             batch_size=args.batch_size,
             pin_memory=torch.cuda.is_available()
         )
 
-    train_file_names, val_file_names = get_split(args.fold)
+    train_file_names, val_file_names = get_filelists()
 
     print('num train = {}, num_val = {}'.format(len(train_file_names), len(val_file_names)))
 
