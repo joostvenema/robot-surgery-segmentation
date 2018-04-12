@@ -26,9 +26,9 @@ def get_filelists():
 
     train_file_names = []
     val_file_names = []
-    val_file_names += list((train_path.glob('*.jpg')))
+    train_file_names += list((train_path.glob('[0-7]*.jpg')))
 
-    train_file_names += list((train_path.glob('*.png')))
+    val_file_names += list((train_path.glob('[8-9]*.jpg')))
 
 
     return train_file_names, val_file_names

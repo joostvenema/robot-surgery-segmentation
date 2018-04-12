@@ -18,9 +18,10 @@ class LossBinary:
         self.nll_loss = nn.BCEWithLogitsLoss()
         self.jaccard_weight = jaccard_weight
 
-    def __call__(self, outputs, targets):
+    def __call__(self, outputs, t
+        print(outputs)
 
-        loss = self.nll_loss(outputs, targets)
+	loss = self.nll_loss(outputs, targets)
 
         if self.jaccard_weight:
             eps = 1e-15

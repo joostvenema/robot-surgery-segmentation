@@ -27,7 +27,8 @@ class DeepglobeDataset(Dataset):
         img, mask = self.transform(img, mask)
 
         if self.mode == 'train':
-            return to_float_tensor(img), torch.from_numpy(mask).long()
+            #print (torch.from_numpy(mask).long())
+            return to_float_tensor(img), torch.from_numpy(np.expand_dims(mask, 0)).float()
         else:
             return to_float_tensor(img), str(img_file_name)
 
@@ -44,7 +45,6 @@ def load_image(path):
 def load_mask(path, problem_type):
     mask_folder = 'binary_masks'
     factor = prepare_data.binary_factor
+    mask = cv2.imread(str(path).replace('train', mask_folder).replace('jpg', 'png'), 0)
 
-    mask = cv2.imread(str(path).replace('images', mask_folder), 0)
-
-    return (mask / factor).astype(np.uint8)
+    return (mask).astype(np.uint8)
