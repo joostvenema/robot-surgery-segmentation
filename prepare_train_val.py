@@ -20,15 +20,19 @@ def get_split(fold):
 
     return train_file_names, val_file_names
 
-def get_filelists():
+def get_filelists(mode='train'):
+    
+    file_names = []
 
-    train_path = data_path / 'train'
+    if mode == 'train':
+        train_path = data_path / 'train'
+    else:
+        train_path = data_path / 'valid'
+    
+    file_names += list((train_path.glob('*.jpg')))
 
-    train_file_names = []
-    val_file_names = []
-    train_file_names += list((train_path.glob('[0-7]*.jpg')))
-
-    val_file_names += list((train_path.glob('[8-9]*.jpg')))
-
-
-    return train_file_names, val_file_names
+    if mode == 'train':
+        
+        return file_names[600:3000], file_names[3000:3600]
+    else:
+        return [], file_names

@@ -22,14 +22,13 @@ class DeepglobeDataset(Dataset):
     def __getitem__(self, idx):
         img_file_name = self.file_names[idx]
         img = load_image(img_file_name)
-        mask = load_mask(img_file_name, self.problem_type)
-
-        img, mask = self.transform(img, mask)
 
         if self.mode == 'train':
-            #print (torch.from_numpy(mask).long())
+            mask = load_mask(img_file_name, self.problem_type)
+            img, mask = self.transform(img, mask)
             return to_float_tensor(img), torch.from_numpy(np.expand_dims(mask, 0)).float()
         else:
+            img, _ = self.transform(img, np.zeros_like(img))
             return to_float_tensor(img), str(img_file_name)
 
 
@@ -47,4 +46,4 @@ def load_mask(path, problem_type):
     factor = prepare_data.binary_factor
     mask = cv2.imread(str(path).replace('train', mask_folder).replace('jpg', 'png'), 0)
 
-    return (mask).astype(np.uint8)
+    return (mask / factor).astype(np.uint8)

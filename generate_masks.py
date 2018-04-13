@@ -73,7 +73,7 @@ def predict(model, from_file_names, batch_size: int, to_path, problem_type):
         for i, image_name in enumerate(paths):
 
             factor = prepare_data.binary_factor
-            t_mask = (F.sigmoid(outputs[i, 0]).data.cpu().numpy()).astype(np.uint8)
+            t_mask = (F.sigmoid(outputs[i, 0]).data.cpu().numpy() * factor).astype(np.uint8)
 
             h, w = t_mask.shape
 
@@ -100,8 +100,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    _, file_names = get_filelists()
-    model = get_model(str(Path(args.model_path).joinpath('model_0.pt')),
+    _, file_names = get_filelists('valid')
+    model = get_model(str(Path(args.model_path).joinpath('model_dg_0.pt')),
                       model_type=args.model_type, problem_type=args.problem_type)
 
     print('num file_names = {}'.format(len(file_names)))
