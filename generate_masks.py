@@ -79,6 +79,10 @@ def predict(model, from_file_names, batch_size: int, to_path, problem_type):
 
             full_mask = t_mask
 
+            _, full_mask = cv2.threshold(full_mask, 127, 255, cv2.THRESH_BINARY)
+
+            full_mask = cv2.cvtColor(full_mask, cv2.COLOR_GRAY2RGB)
+
             instrument_folder = Path(paths[i]).parent.parent.name
 
             (to_path / instrument_folder).mkdir(exist_ok=True, parents=True)
@@ -97,11 +101,12 @@ if __name__ == '__main__':
     arg('--fold', type=int, default=0, choices=[0, 1, 2, 3, -1], help='-1: all folds')
     arg('--problem_type', type=str, default='parts', choices=['binary', 'parts', 'instruments'])
     arg('--workers', type=int, default=8)
+    arg('--mode', type=str, default='valid', choices=['valid', 'test'], help='Which dataset to predict')
 
     args = parser.parse_args()
 
-    _, file_names = get_filelists('valid')
-    model = get_model(str(Path(args.model_path).joinpath('model_dg_0.pt')),
+    _, file_names = get_filelists(args.mode)
+    model = get_model(str(Path(args.model_path).joinpath('model_dg_2.pt')),
                       model_type=args.model_type, problem_type=args.problem_type)
 
     print('num file_names = {}'.format(len(file_names)))

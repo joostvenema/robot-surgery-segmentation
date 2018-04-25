@@ -26,13 +26,15 @@ def get_filelists(mode='train'):
 
     if mode == 'train':
         train_path = data_path / 'train'
+    elif mode == 'test':
+        train_path = data_path / 'test'
     else:
         train_path = data_path / 'valid'
     
     file_names += list((train_path.glob('*.jpg')))
 
     if mode == 'train':
-        
-        return file_names[600:3000], file_names[3000:3600]
+        # Get 60% for test, 20% for validation
+        return file_names[0:int(len(file_names)/10*6)], file_names[int(len(file_names)/10*6):int(len(file_names)/10*8)]
     else:
         return [], file_names
