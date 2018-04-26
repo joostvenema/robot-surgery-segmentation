@@ -11,7 +11,7 @@ import torch.backends.cudnn as cudnn
 import torch.backends.cudnn
 
 from models import UNet11, LinkNet34, UNet, UNet16
-from loss import LossBinary, LossMulti
+from loss import LossBinary
 from dataset import DeepglobeDataset
 import utils
 
@@ -21,7 +21,8 @@ from transforms import (DualCompose,
                         ImageOnly,
                         Normalize,
                         HorizontalFlip,
-                        VerticalFlip)
+                        VerticalFlip,
+                        RandomRotate90)
 
 
 def main():
@@ -29,13 +30,11 @@ def main():
     arg = parser.add_argument
     arg('--jaccard-weight', default=1, type=float)
     arg('--device-ids', type=str, default='0', help='For example 0,1 to run on two GPUs')
-    arg('--fold', type=int, help='fold', default=0)
     arg('--root', default='runs/debug', help='checkpoint root')
     arg('--batch-size', type=int, default=1)
     arg('--n-epochs', type=int, default=100)
     arg('--lr', type=float, default=0.0001)
     arg('--workers', type=int, default=8)
-    arg('--type', type=str, default='binary', choices=['binary', 'parts', 'instruments'])
     arg('--model', type=str, default='UNet', choices=['UNet', 'UNet11', 'UNet16', 'LinkNet34'])
 
     args = parser.parse_args()
@@ -63,16 +62,15 @@ def main():
             device_ids = None
         model = nn.DataParallel(model, device_ids=device_ids).cuda()
 
-    if args.type == 'binary':
-        loss = LossBinary(jaccard_weight=args.jaccard_weight)
-    else:
-        loss = LossMulti(num_classes=num_classes, jaccard_weight=args.jaccard_weight)
+
+    loss = LossBinary(jaccard_weight=args.jaccard_weight)
+
 
     cudnn.benchmark = True
 
-    def make_loader(file_names, shuffle=False, transform=None, problem_type='binary'):
+    def make_loader(file_names, shuffle=False, transform=None, problem_type='binary', mode='train'):
         return DataLoader(
-            dataset=DeepglobeDataset(file_names, transform=transform, problem_type=problem_type),
+            dataset=DeepglobeDataset(file_names, transform=transform, problem_type=problem_type, mode=mode),
             shuffle=shuffle,
             num_workers=args.workers,
             batch_size=args.batch_size,
@@ -86,6 +84,7 @@ def main():
     train_transform = DualCompose([
         HorizontalFlip(),
         VerticalFlip(),
+        RandomRotate90(),
         ImageOnly(Normalize())
     ])
 
@@ -93,16 +92,14 @@ def main():
         ImageOnly(Normalize())
     ])
 
-    train_loader = make_loader(train_file_names, shuffle=True, transform=train_transform, problem_type=args.type)
-    valid_loader = make_loader(val_file_names, transform=val_transform, problem_type=args.type)
+    train_loader = make_loader(train_file_names, shuffle=True, transform=train_transform, problem_type='binary', mode='train')
+    valid_loader = make_loader(val_file_names, transform=val_transform, problem_type='binary', mode='valid')
 
     root.joinpath('params.json').write_text(
         json.dumps(vars(args), indent=True, sort_keys=True))
 
-    if args.type == 'binary':
-        valid = validation_binary
-    else:
-        valid = validation_multi
+    valid = validation_binary
+
 
     utils.train(
         init_optimizer=lambda lr: Adam(model.parameters(), lr=lr),
@@ -112,7 +109,6 @@ def main():
         train_loader=train_loader,
         valid_loader=valid_loader,
         validation=valid,
-        fold=args.fold,
         num_classes=num_classes
     )
 

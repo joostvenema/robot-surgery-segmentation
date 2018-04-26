@@ -24,12 +24,11 @@ img_transform = DualCompose([
 ])
 
 
-def get_model(model_path, model_type='unet11', problem_type='binary'):
+def get_model(model_path, model_type='UNet16', problem_type='binary'):
     """
 
     :param model_path:
     :param model_type: 'UNet', 'UNet16', 'UNet11', 'LinkNet34'
-    :param problem_type: 'binary', 'parts', 'instruments'
     :return:
     """
 
@@ -83,23 +82,22 @@ def predict(model, from_file_names, batch_size: int, to_path, problem_type):
 
             full_mask = cv2.cvtColor(full_mask, cv2.COLOR_GRAY2RGB)
 
-            instrument_folder = Path(paths[i]).parent.parent.name
+            mask_folder = Path(paths[i]).parent.parent.name
 
-            (to_path / instrument_folder).mkdir(exist_ok=True, parents=True)
+            (to_path / mask_folder).mkdir(exist_ok=True, parents=True)
 
-            cv2.imwrite(str(to_path / instrument_folder / (Path(paths[i]).stem + '.png')), full_mask)
+            cv2.imwrite(str(to_path / mask_folder / (Path(paths[i]).stem + '.png')), full_mask)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     arg = parser.add_argument
-    arg('--model_path', type=str, default='data/models/unet11_binary_20', help='path to model folder')
+    arg('--model_path', type=str, default='data/models', help='path to model folder')
+    arg('--model_file', type=str, default='model_0.pt', help='filename of trained model')
     arg('--model_type', type=str, default='UNet11', help='network architecture',
         choices=['UNet', 'UNet11', 'UNet16', 'LinkNet34'])
     arg('--output_path', type=str, help='path to save images', default='.')
     arg('--batch-size', type=int, default=4)
-    arg('--fold', type=int, default=0, choices=[0, 1, 2, 3, -1], help='-1: all folds')
-    arg('--problem_type', type=str, default='parts', choices=['binary', 'parts', 'instruments'])
     arg('--workers', type=int, default=8)
     arg('--mode', type=str, default='valid', choices=['valid', 'test'], help='Which dataset to predict')
 
@@ -114,4 +112,4 @@ if __name__ == '__main__':
     output_path = Path(args.output_path)
     output_path.mkdir(exist_ok=True, parents=True)
 
-    predict(model, file_names, args.batch_size, output_path, problem_type=args.problem_type)
+    predict(model, file_names, args.batch_size, output_path, problem_type='binary')

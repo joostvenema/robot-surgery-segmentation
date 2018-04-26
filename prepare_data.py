@@ -1,12 +1,14 @@
 """
-[1] Merge masks with different instruments into one binary mask
-[2] Crop black borders from images and masks
+Split train images in train/valid/test (60/20/20)
 """
 from pathlib import Path
 
 from tqdm import tqdm
+from random import shuffle
+from shutil import copyfile
 import cv2
 import numpy as np
+
 
 data_path = Path('data')
 
@@ -14,33 +16,32 @@ train_path = data_path / 'train'
 
 binary_factor = 255
 
-# if __name__ == '__main__':
-#     for instrument_index in range(1, 9):
-#         #instrument_folder = 'instrument_dataset_' + str(instrument_index)
-#
-#         (data_path / 'images').mkdir(exist_ok=True, parents=True)
-#
-#         #binary_mask_folder = (train_path / instrument_folder / 'binary_masks')
-#         #binary_mask_folder.mkdir(exist_ok=True, parents=True)
-#
-#
-#         #mask_folders = list((train_path).glob('*.png'))
-#         # mask_folders = [x for x in mask_folders if 'Other' not in str(mask_folders)]
-#
-#         for file_name in tqdm(list((train_path).glob('*.jpg'))):
-#             img = cv2.imread(str(file_name))
-#
-#             cv2.imwrite(str(cropped_train_path / instrument_folder / 'images' / (file_name.stem + '.jpg')), img,
-#                         [cv2.IMWRITE_JPEG_QUALITY, 100])
-#
-#             mask_binary = np.zeros((old_h, old_w))
-#
-#             for mask_folder in mask_folders:
-#                 mask = cv2.imread(str(mask_folder / file_name.name), 0)
-#
-#                 mask_binary += mask
-#
-#             mask_binary = (mask_binary[h_start: h_start + height, w_start: w_start + width] > 0).astype(
-#                 np.uint8) * binary_factor
-#
-#             cv2.imwrite(str(binary_mask_folder / file_name.name), mask_binary)
+if __name__ == '__main__':
+
+    (train_path / 'train').mkdir(exist_ok=True, parents=True)
+    (train_path / 'valid').mkdir(exist_ok=True, parents=True)
+    (train_path / 'test').mkdir(exist_ok=True, parents=True)
+
+    file_names = list((train_path).glob('*.jpg'))
+    shuffle(file_names)
+    train_files = file_names[0:int(len(file_names)/10*6)]
+    valid_files = file_names[int(len(file_names)/10*6):int(len(file_names)/10*8)]
+    test_files = file_names[int(len(file_names)/10*8):]
+
+    print('separate training data')
+    for file_name in tqdm(train_files):
+        mask_file =  (file_name.stem).replace('_sat', '_mask') + '.png'
+        copyfile(file_name,  (train_path / 'train' / (file_name.stem + '.jpg')))
+        copyfile(train_path / mask_file, train_path / 'train' / mask_file)
+
+    print('separate validation data')
+    for file_name in tqdm(valid_files):
+        mask_file =  (file_name.stem).replace('_sat', '_mask') + '.png'
+        copyfile(file_name,  (train_path / 'valid' / (file_name.stem + '.jpg')))
+        copyfile(train_path / mask_file, train_path / 'train' / mask_file)
+
+    print('separate test data')
+    for file_name in tqdm(test_files):
+        mask_file =  (file_name.stem).replace('_sat', '_mask') + '.png'
+        copyfile(file_name,  (train_path / 'test' / (file_name.stem + '.jpg')))
+        copyfile(train_path / mask_file, train_path / 'train' / mask_file)
