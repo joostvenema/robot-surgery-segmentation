@@ -46,7 +46,6 @@ def load_image(path):
 
 
 def load_mask(path, problem_type):
-    # mask_folder = 'train'
     factor = prepare_data.binary_factor
     mask = cv2.imread(str(path).replace('sat.jpg', 'mask.png'), 0)
 

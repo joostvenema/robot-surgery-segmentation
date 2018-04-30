@@ -27,21 +27,21 @@ if __name__ == '__main__':
     train_files = file_names[0:int(len(file_names)/10*6)]
     valid_files = file_names[int(len(file_names)/10*6):int(len(file_names)/10*8)]
     test_files = file_names[int(len(file_names)/10*8):]
-
+    
     print('separate training data')
     for file_name in tqdm(train_files):
         mask_file =  (file_name.stem).replace('_sat', '_mask') + '.png'
-        copyfile(file_name,  (train_path / 'train' / (file_name.stem + '.jpg')))
-        copyfile(train_path / mask_file, train_path / 'train' / mask_file)
+        copyfile(str(file_name),  str((train_path / 'train' / (file_name.stem + '.jpg'))))
+        copyfile(str(train_path / mask_file), str(train_path / 'train' / mask_file))
 
     print('separate validation data')
     for file_name in tqdm(valid_files):
         mask_file =  (file_name.stem).replace('_sat', '_mask') + '.png'
-        copyfile(file_name,  (train_path / 'valid' / (file_name.stem + '.jpg')))
-        copyfile(train_path / mask_file, train_path / 'train' / mask_file)
+        copyfile(str(file_name),  str((train_path / 'valid' / (file_name.stem + '.jpg'))))
+        copyfile(str(train_path / mask_file), str(train_path / 'valid' / mask_file))
 
     print('separate test data')
     for file_name in tqdm(test_files):
         mask_file =  (file_name.stem).replace('_sat', '_mask') + '.png'
-        copyfile(file_name,  (train_path / 'test' / (file_name.stem + '.jpg')))
-        copyfile(train_path / mask_file, train_path / 'train' / mask_file)
+        copyfile(str(file_name),  str((train_path / 'test' / (file_name.stem + '.jpg'))))
+        copyfile(str(train_path / mask_file), str(train_path / 'test' / mask_file))
