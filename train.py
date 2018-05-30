@@ -57,7 +57,7 @@ def main():
 
     if torch.cuda.is_available():
         if args.device_ids:
-            device_ids = list(map(int, args.device_ids.split(',')))
+            device_ids = None # list(map(int, args.device_ids.split(',')))
         else:
             device_ids = None
         model = nn.DataParallel(model, device_ids=device_ids).cuda()

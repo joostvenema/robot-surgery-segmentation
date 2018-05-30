@@ -5,12 +5,12 @@ def get_filelists(mode='train'):
     if mode == 'train':
         train_path = data_path / 'train' / 'train'
         train_valid_path = data_path / 'train' / 'valid'
-        return list((train_path.glob('*.jpg'))), list((train_valid_path.glob('*.jpg')))
+        return list((train_path.glob('*sat.jpg'))), list((train_valid_path.glob('*sat.jpg')))
 
     elif mode == 'test':
         test_path = data_path / 'test' / 'test'
-        return [], list((test_path.glob('*.jpg')))
+        return [], list((test_path.glob('*sat.jpg')))
 
     else:
         valid_path = data_path / 'valid'
-        return [], list((valid_path.glob('*.jpg')))
+        return [], list((valid_path.glob('*sat.jpg')))
