@@ -8,7 +8,7 @@ def get_filelists(mode='train'):
         return list((train_path.glob('*.jpg'))), list((train_valid_path.glob('*.jpg')))
 
     elif mode == 'test':
-        test_path = data_path / 'test' / 'test'
+        test_path = data_path / 'train' / 'test'
         return [], list((test_path.glob('*.jpg')))
 
     else:

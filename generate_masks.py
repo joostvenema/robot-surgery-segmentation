@@ -93,7 +93,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     arg = parser.add_argument
     arg('--model_path', type=str, default='data/models', help='path to model folder')
-    arg('--model_file', type=str, default='model_0.pt', help='filename of trained model')
+    arg('--model_file', type=str, default='model_dg_3.pt', help='filename of trained model')
     arg('--model_type', type=str, default='UNet11', help='network architecture',
         choices=['UNet', 'UNet11', 'UNet16', 'LinkNet34'])
     arg('--output_path', type=str, help='path to save images', default='.')
@@ -104,8 +104,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     _, file_names = get_filelists(args.mode)
-    model = get_model(str(Path(args.model_path).joinpath('model_dg_2.pt')),
-                      model_type=args.model_type, problem_type=args.problem_type)
+    model = get_model(str(Path(args.model_path).joinpath(args.model_file)),
+                      model_type=args.model_type, problem_type='binary')
 
     print('num file_names = {}'.format(len(file_names)))
 

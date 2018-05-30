@@ -101,6 +101,6 @@ ENV/
 .mypy_cache/
 
 # Datafiles
-data/
+data*/
 runs/
 predictions/
