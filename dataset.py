@@ -22,13 +22,14 @@ class DeepglobeDataset(Dataset):
     def __getitem__(self, idx):
         img_file_name = self.file_names[idx]
         img = load_image(img_file_name)
+        dsm = load_dsm(img_file_name)
 
         if self.mode == 'train':
-            mask = load_mask(img_file_name, self.problem_type)
-            img, mask = self.transform(img, mask)
-            return to_float_tensor(img), torch.from_numpy(np.expand_dims(mask, 0)).float()
+            mask = load_mask(img_file_name)
+            img, dsm, mask = self.transform(img, dsm, mask)
+            return to_float_tensor(img, dsm), torch.from_numpy(np.expand_dims(mask, 0)).float()
         elif self.mode == 'valid':
-            mask = load_mask(img_file_name, self.problem_type)
+            mask = load_mask(img_file_name)
             img, mask = self.transform(img, mask)
             return to_float_tensor(img), torch.from_numpy(np.expand_dims(mask, 0)).float()
         else:
@@ -36,16 +37,22 @@ class DeepglobeDataset(Dataset):
             return to_float_tensor(img), str(img_file_name)
 
 
-def to_float_tensor(img):
-    return torch.from_numpy(np.moveaxis(img, -1, 0)).float()
+def to_float_tensor(img, dsm):
+    img = np.moveaxis(img, -1, 0)
+    dsm = np.expand_dims(dsm, 0)
+
+    return torch.from_numpy(np.vstack((img, dsm))).float()
 
 
 def load_image(path):
     img = cv2.imread(str(path))
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+def load_dsm(path):
+    dsm = cv2.imread(str(path).replace('sat.jpg', 'dsm.jpg'), 0)
+    return dsm
 
-def load_mask(path, problem_type):
+def load_mask(path):
     factor = prepare_data.binary_factor
     mask = cv2.imread(str(path).replace('sat.jpg', 'mask.png'), 0)
 

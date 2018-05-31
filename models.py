@@ -342,7 +342,7 @@ class UNet(nn.Module):
     module = UNetModule
 
     def __init__(self,
-                 input_channels: int = 3,
+                 input_channels: int = 4,
                  filters_base: int = 32,
                  down_filter_factors=(1, 2, 4, 8, 16),
                  up_filter_factors=(1, 2, 4, 8, 16),

@@ -18,8 +18,11 @@ import utils
 from prepare_train_val import get_filelists
 
 from transforms import (DualCompose,
+                        TripleCompose,
                         ImageOnly,
+                        DsmOnly,
                         Normalize,
+                        NormalizeDsm,
                         HorizontalFlip,
                         VerticalFlip,
                         RandomRotate90)
@@ -53,7 +56,7 @@ def main():
     elif args.model == 'LinkNet34':
         model = LinkNet34(num_classes=num_classes, pretrained=True)
     else:
-        model = UNet(num_classes=num_classes, input_channels=3)
+        model = UNet(num_classes=num_classes, input_channels=4)
 
     if torch.cuda.is_available():
         if args.device_ids:
@@ -81,11 +84,12 @@ def main():
 
     print('num train = {}, num_val = {}'.format(len(train_file_names), len(val_file_names)))
 
-    train_transform = DualCompose([
+    train_transform = TripleCompose([
         HorizontalFlip(),
         VerticalFlip(),
         RandomRotate90(),
-        ImageOnly(Normalize())
+        ImageOnly(Normalize()),
+        DsmOnly(NormalizeDsm())
     ])
 
     val_transform = DualCompose([

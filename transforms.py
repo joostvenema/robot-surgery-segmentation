@@ -17,8 +17,18 @@ class DualCompose:
 
     def __call__(self, x, mask=None):
         for t in self.transforms:
-            x, mask = t(x, mask)
+            x, _, mask = t(x, None, mask)
         return x, mask
+
+
+class TripleCompose:
+    def __init__(self, transforms):
+        self.transforms = transforms
+
+    def __call__(self, x, y, mask=None):
+        for t in self.transforms:
+            x, y, mask = t(x, y, mask)
+        return x, y, mask
 
 
 class OneOf:
@@ -54,32 +64,41 @@ class ImageOnly:
     def __init__(self, trans):
         self.trans = trans
 
-    def __call__(self, x, mask=None):
-        return self.trans(x), mask
+    def __call__(self, x, y, mask=None):
+        return self.trans(x), y, mask
+
+class DsmOnly:
+    def __init__(self, trans):
+        self.trans = trans
+
+    def __call__(self, x, y, mask=None):
+        return x, self.trans(y), mask
 
 
 class VerticalFlip:
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, img, mask=None):
+    def __call__(self, img, dsm, mask=None):
         if random.random() < self.prob:
             img = cv2.flip(img, 0)
+            dsm = cv2.flip(dsm, 0)
             if mask is not None:
                 mask = cv2.flip(mask, 0)
-        return img, mask
+        return img, dsm, mask
 
 
 class HorizontalFlip:
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, img, mask=None):
+    def __call__(self, img, dsm, mask=None):
         if random.random() < self.prob:
             img = cv2.flip(img, 1)
+            dsm = cv2.flip(dsm, 1)
             if mask is not None:
                 mask = cv2.flip(mask, 1)
-        return img, mask
+        return img, dsm, mask
 
 
 class RandomFlip:
@@ -111,13 +130,14 @@ class RandomRotate90:
     def __init__(self, prob=0.5):
         self.prob = prob
 
-    def __call__(self, img, mask=None):
+    def __call__(self, img, dsm, mask=None):
         if random.random() < self.prob:
             factor = random.randint(0, 4)
             img = np.rot90(img, factor)
+            dsm = np.rot90(dsm, factor)
             if mask is not None:
                 mask = np.rot90(mask, factor)
-        return img.copy(), mask.copy()
+        return img.copy(), dsm.copy(), mask.copy()
 
 
 class Rotate:
@@ -300,6 +320,19 @@ class Normalize:
         img /= np.ones(img.shape) * self.std
         return img
 
+class NormalizeDsm:
+    def __init__(self, mean=0.205, std=0.170):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, img):
+        max_pixel_value = 255.0
+
+        img = img.astype(np.float32) / max_pixel_value
+
+        img -= np.ones(img.shape) * self.mean
+        img /= np.ones(img.shape) * self.std
+        return img
 
 class Distort1:
     """"
