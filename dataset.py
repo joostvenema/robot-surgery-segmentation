@@ -30,11 +30,11 @@ class DeepglobeDataset(Dataset):
             return to_float_tensor(img, dsm), torch.from_numpy(np.expand_dims(mask, 0)).float()
         elif self.mode == 'valid':
             mask = load_mask(img_file_name)
-            img, mask = self.transform(img, mask)
-            return to_float_tensor(img), torch.from_numpy(np.expand_dims(mask, 0)).float()
+            img, dsm, mask = self.transform(img, dsm, mask)
+            return to_float_tensor(img, dsm), torch.from_numpy(np.expand_dims(mask, 0)).float()
         else:
-            img, _ = self.transform(img, np.zeros_like(img))
-            return to_float_tensor(img), str(img_file_name)
+            img, dsm, _ = self.transform(img, dsm, np.zeros_like(img))
+            return to_float_tensor(img, dsm), str(img_file_name)
 
 
 def to_float_tensor(img, dsm):

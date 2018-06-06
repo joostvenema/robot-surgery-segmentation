@@ -16,12 +16,15 @@ from torch.utils.data import DataLoader
 from torch.nn import functional as F
 
 from transforms import (ImageOnly,
+                        DsmOnly,
                         Normalize,
-                        DualCompose)
+                        NormalizeDsm,
+                        TripleCompose)
 
-img_transform = DualCompose([
-    ImageOnly(Normalize())
-])
+img_transform = TripleCompose([
+        ImageOnly(Normalize()),
+        DsmOnly(NormalizeDsm())
+        ])
 
 
 def get_model(model_path, model_type='UNet16', problem_type='binary'):
@@ -57,7 +60,7 @@ def get_model(model_path, model_type='UNet16', problem_type='binary'):
 
 def predict(model, from_file_names, batch_size: int, to_path, problem_type):
     loader = DataLoader(
-        dataset=DeepglobeDataset(from_file_names, transform=img_transform, mode='predict', problem_type=problem_type),
+        dataset=DeepglobeDataset(from_file_names, transform=img_transform, mode='predict', problem_type='binary'),
         shuffle=False,
         batch_size=batch_size,
         num_workers=args.workers,
@@ -93,8 +96,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     arg = parser.add_argument
     arg('--model_path', type=str, default='data/models', help='path to model folder')
-    arg('--model_file', type=str, default='model_0.pt', help='filename of trained model')
-    arg('--model_type', type=str, default='UNet11', help='network architecture',
+    arg('--model_file', type=str, default='model.pt', help='filename of trained model')
+    arg('--model_type', type=str, default='UNet', help='network architecture',
         choices=['UNet', 'UNet11', 'UNet16', 'LinkNet34'])
     arg('--output_path', type=str, help='path to save images', default='.')
     arg('--batch-size', type=int, default=4)
@@ -104,8 +107,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     _, file_names = get_filelists(args.mode)
-    model = get_model(str(Path(args.model_path).joinpath('model_dg_2.pt')),
-                      model_type=args.model_type, problem_type=args.problem_type)
+    model = get_model(str(Path(args.model_path).joinpath(args.model_file)),
+                      model_type=args.model_type, problem_type='binary')
 
     print('num file_names = {}'.format(len(file_names)))
 

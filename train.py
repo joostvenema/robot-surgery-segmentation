@@ -60,7 +60,7 @@ def main():
 
     if torch.cuda.is_available():
         if args.device_ids:
-            device_ids = None # list(map(int, args.device_ids.split(',')))
+            device_ids = list(map(int, args.device_ids.split(',')))
         else:
             device_ids = None
         model = nn.DataParallel(model, device_ids=device_ids).cuda()
@@ -92,8 +92,9 @@ def main():
         DsmOnly(NormalizeDsm())
     ])
 
-    val_transform = DualCompose([
-        ImageOnly(Normalize())
+    val_transform = TripleCompose([
+        ImageOnly(Normalize()),
+        DsmOnly(NormalizeDsm())
     ])
 
     train_loader = make_loader(train_file_names, shuffle=True, transform=train_transform, problem_type='binary', mode='train')
